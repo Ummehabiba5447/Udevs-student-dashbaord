@@ -2827,3 +2827,558 @@ input {
 
 }
 
+/* =========================================================
+   BEAUTIFUL SUBJECT FORM
+========================================================= */
+
+.subject-form-card {
+    position: relative;
+
+    background: #ffffff;
+
+    border: 1px solid #e7edf4;
+
+    border-radius: 24px;
+
+    padding: 0;
+
+    margin-bottom: 30px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 10px 35px rgba(30, 58, 95, 0.07);
+}
+
+
+/* =========================================================
+   FORM HEADER
+========================================================= */
+
+.subject-form-header {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 28px 32px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f7faff 0%,
+            #ffffff 65%
+        );
+
+    border-bottom: 1px solid #edf1f6;
+}
+
+
+.subject-form-header::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 150px;
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #1e3a5f,
+            #f0a500
+        );
+}
+
+
+.form-header-icon {
+    width: 58px;
+    height: 58px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #eef4fa;
+
+    border: 1px solid #dce7f2;
+
+    border-radius: 16px;
+
+    font-size: 25px;
+
+    box-shadow:
+        0 5px 15px rgba(30, 58, 95, 0.08);
+}
+
+
+.form-header-content span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #f0a500;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+}
+
+
+.form-header-content h2 {
+    margin: 0 0 5px;
+
+    color: #1e3a5f;
+
+    font-size: 23px;
+    font-weight: 750;
+}
+
+
+.form-header-content p {
+    margin: 0;
+
+    color: #8a97a8;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   FORM BODY
+========================================================= */
+
+.subject-form-card form {
+    padding: 30px 32px;
+}
+
+
+/* =========================================================
+   FORM SECTION
+========================================================= */
+
+.form-section {
+    padding-bottom: 30px;
+
+    margin-bottom: 30px;
+
+    border-bottom: 1px solid #edf1f5;
+}
+
+
+.form-section:last-of-type {
+    margin-bottom: 0;
+
+    border-bottom: none;
+}
+
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    margin-bottom: 24px;
+}
+
+
+.section-number {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #1e3a5f;
+
+    color: #ffffff;
+
+    border-radius: 11px;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.5px;
+
+    box-shadow:
+        0 5px 12px rgba(30, 58, 95, 0.15);
+}
+
+
+.form-section-title h3 {
+    margin: 0 0 3px;
+
+    color: #273b59;
+
+    font-size: 16px;
+    font-weight: 750;
+}
+
+
+.form-section-title p {
+    margin: 0;
+
+    color: #9aa5b5;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   INPUT GRID
+========================================================= */
+
+.beautiful-form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
+.beautiful-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.beautiful-input-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #34465f;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+
+.beautiful-input-group label span {
+    margin-left: 3px;
+
+    color: #e25555;
+}
+
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.input-wrapper {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+}
+
+
+.input-icon {
+    position: absolute;
+
+    left: 13px;
+
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f4f7fa;
+
+    border-radius: 8px;
+
+    color: #1e3a5f;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    z-index: 2;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.beautiful-input-group input,
+.beautiful-input-group select {
+    width: 100%;
+
+    height: 48px;
+
+    padding:
+        0 14px 0 54px;
+
+    border: 1px solid #dfe6ee;
+
+    border-radius: 12px;
+
+    background: #fbfcfe;
+
+    color: #293b55;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+
+.beautiful-input-group input::placeholder {
+    color: #a9b2bf;
+}
+
+
+/* Focus */
+
+.beautiful-input-group input:focus,
+.beautiful-input-group select:focus {
+    background: #ffffff;
+
+    border-color: #1e3a5f;
+
+    box-shadow:
+        0 0 0 4px rgba(30, 58, 95, 0.08);
+}
+
+
+/* Hover */
+
+.beautiful-input-group input:hover,
+.beautiful-input-group select:hover {
+    border-color: #bdc9d7;
+}
+
+
+/* Disabled */
+
+.beautiful-input-group input:disabled {
+    background: #f1f4f7;
+
+    color: #8491a3;
+
+    cursor: not-allowed;
+
+    border-color: #e1e6ec;
+}
+
+
+/* Select */
+
+.beautiful-input-group select {
+    cursor: pointer;
+
+    appearance: auto;
+}
+
+
+/* Helper text */
+
+.beautiful-input-group small {
+    margin-top: 6px;
+
+    color: #a0aab8;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+========================================================= */
+
+.beautiful-form-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding-top: 8px;
+}
+
+
+/* Submit */
+
+.form-submit-btn {
+    min-width: 165px;
+
+    height: 46px;
+
+    padding: 0 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1e3a5f,
+            #274c77
+        );
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 7px 18px rgba(30, 58, 95, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.form-submit-btn span {
+    font-size: 18px;
+}
+
+
+.form-submit-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 11px 24px rgba(30, 58, 95, 0.24);
+}
+
+
+.form-submit-btn:active {
+    transform: translateY(0);
+}
+
+
+/* Cancel */
+
+.form-cancel-btn {
+    height: 46px;
+
+    padding: 0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    background: #ffffff;
+
+    border: 1px solid #dce3eb;
+
+    border-radius: 11px;
+
+    color: #69778a;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.form-cancel-btn:hover {
+    background: #f6f8fa;
+
+    border-color: #c9d2dd;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .beautiful-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .subject-form-header {
+        padding: 22px;
+
+        align-items: flex-start;
+    }
+
+
+    .subject-form-card form {
+        padding: 24px 20px;
+    }
+
+
+    .form-header-icon {
+        width: 48px;
+        height: 48px;
+
+        font-size: 20px;
+    }
+
+
+    .form-header-content h2 {
+        font-size: 20px;
+    }
+
+
+    .beautiful-form-actions {
+        flex-direction: column-reverse;
+    }
+
+
+    .form-submit-btn,
+    .form-cancel-btn {
+        width: 100%;
+    }
+
+}

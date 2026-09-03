@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
@@ -12,6 +11,10 @@ import {
     deleteSubject
 } from "../utils/subjectStorage";
 
+
+// ==========================================
+// EMPTY FORM
+// ==========================================
 
 const emptyForm = {
     courseCode: "",
@@ -28,39 +31,71 @@ const emptyForm = {
 };
 
 
+// ==========================================
+// SUBJECTS COMPONENT
+// ==========================================
+
 function Subjects() {
 
-    const [subjects, setSubjects] = useState({});
+    // Load subjects from localStorage
+    const [subjects, setSubjects] = useState(() => {
+        return getSubjects();
+    });
 
-    const [formData, setFormData] = useState(emptyForm);
+    // Form data
+    const [formData, setFormData] = useState({
+        ...emptyForm
+    });
 
+    // Course code currently being edited
     const [editingCode, setEditingCode] = useState(null);
 
+    // Success / error message
     const [message, setMessage] = useState("");
 
+    // Search
     const [search, setSearch] = useState("");
 
 
-  useEffect(() => {
-    const data = getSubjects();
-    setSubjects(data);
-}, []);
+    // ==========================================
+    // HANDLE INPUT CHANGE
+    // ==========================================
 
     const handleChange = (e) => {
 
         const { name, value } = e.target;
 
-        setFormData({
-            ...formData,
+        setFormData((previousData) => ({
+            ...previousData,
             [name]: value
-        });
+        }));
     };
 
+
+    // ==========================================
+    // RESET FORM
+    // ==========================================
+
+    const resetForm = () => {
+
+        setFormData({
+            ...emptyForm
+        });
+
+        setEditingCode(null);
+    };
+
+
+    // ==========================================
+    // ADD / UPDATE SUBJECT
+    // ==========================================
 
     const handleSubmit = (e) => {
 
         e.preventDefault();
+
         let result;
+
 
         if (editingCode) {
 
@@ -77,26 +112,33 @@ function Subjects() {
         }
 
 
-        setMessage(result.message);
+        setMessage(
+            result?.message || ""
+        );
 
 
-       if (result.success) {
+        if (result?.success) {
 
-    setFormData({
-        ...emptyForm
-    });
+            // Refresh subjects
+            setSubjects(
+                getSubjects()
+            );
 
-    setEditingCode(null);
+            // Clear form
+            resetForm();
 
-    setSubjects(getSubjects());
 
-
+            // Remove message after 3 seconds
             setTimeout(() => {
                 setMessage("");
             }, 3000);
         }
     };
 
+
+    // ==========================================
+    // EDIT SUBJECT
+    // ==========================================
 
     const handleEdit = (subject) => {
 
@@ -114,9 +156,14 @@ function Subjects() {
             capacity: subject.capacity || "40"
         });
 
-        setEditingCode(subject.courseCode);
+
+        setEditingCode(
+            subject.courseCode
+        );
+
 
         setMessage("");
+
 
         window.scrollTo({
             top: 0,
@@ -125,10 +172,26 @@ function Subjects() {
     };
 
 
+    // ==========================================
+    // CANCEL EDIT
+    // ==========================================
+
+    const handleCancel = () => {
+
+        resetForm();
+
+        setMessage("");
+    };
+
+
+    // ==========================================
+    // DELETE SUBJECT
+    // ==========================================
+
     const handleDelete = (courseCode) => {
 
         const confirmed = window.confirm(
-            "Are you sure you want to delete " + courseCode + "?"
+            `Are you sure you want to delete ${courseCode}?`
         );
 
 
@@ -137,19 +200,25 @@ function Subjects() {
         }
 
 
-        const result = deleteSubject(courseCode);
+        const result =
+            deleteSubject(courseCode);
 
-        setMessage(result.message);
+
+        setMessage(
+            result?.message || ""
+        );
 
 
-        if (result.success) {
+        if (result?.success) {
 
-    setSubjects(getSubjects());
+            setSubjects(
+                getSubjects()
+            );
 
-    if (editingCode === courseCode) {
-        handleCancel();
-    }
 
+            if (editingCode === courseCode) {
+                resetForm();
+            }
 
 
             setTimeout(() => {
@@ -159,51 +228,64 @@ function Subjects() {
     };
 
 
-    const handleCancel = () => {
+    // ==========================================
+    // SEARCH
+    // ==========================================
 
-        setEditingCode(null);
-
-        setFormData({
-            ...emptyForm
-        });
-
-        setMessage("");
-    };
+    const searchText =
+        search.toLowerCase().trim();
 
 
-    const filteredSubjects = Object.values(subjects).filter(
-        (subject) => {
+    const filteredSubjects =
+        Object.values(subjects || {}).filter(
+            (subject) => {
 
-            const searchText =
-                search.toLowerCase().trim();
+                return (
+                    String(
+                        subject.courseCode || ""
+                    )
+                        .toLowerCase()
+                        .includes(searchText)
+
+                    ||
+
+                    String(
+                        subject.subjectName || ""
+                    )
+                        .toLowerCase()
+                        .includes(searchText)
+
+                    ||
+
+                    String(
+                        subject.instructor || ""
+                    )
+                        .toLowerCase()
+                        .includes(searchText)
+
+                    ||
+
+                    String(
+                        subject.department || ""
+                    )
+                        .toLowerCase()
+                        .includes(searchText)
+
+                    ||
+
+                    String(
+                        subject.semester || ""
+                    )
+                        .toLowerCase()
+                        .includes(searchText)
+                );
+            }
+        );
 
 
-            return (
-                subject.courseCode
-                    ?.toLowerCase()
-                    .includes(searchText)
-
-                ||
-
-                subject.subjectName
-                    ?.toLowerCase()
-                    .includes(searchText)
-
-                ||
-
-                subject.instructor
-                    ?.toLowerCase()
-                    .includes(searchText)
-
-                ||
-
-                subject.department
-                    ?.toLowerCase()
-                    .includes(searchText)
-            );
-        }
-    );
-
+    // ==========================================
+    // TOTAL CREDIT HOURS
+    // ==========================================
 
     const totalCreditHours =
         filteredSubjects.reduce(
@@ -211,23 +293,39 @@ function Subjects() {
 
                 return (
                     total +
-                    Number(subject.creditHours || 0)
+                    Number(
+                        subject.creditHours || 0
+                    )
                 );
             },
             0
         );
 
 
+    // ==========================================
+    // RETURN
+    // ==========================================
+
     return (
+
         <div className="dashboard-layout">
 
+            {/* SIDEBAR */}
             <Sidebar />
+
 
             <main className="dashboard-main">
 
+                {/* HEADER */}
                 <Header />
 
+
                 <div className="dashboard-content">
+
+
+                    {/* ==================================
+                        PAGE TITLE
+                    ================================== */}
 
                     <div className="page-title">
 
@@ -256,6 +354,8 @@ function Subjects() {
                             }}
                         >
 
+                            {/* SUBJECT COUNT */}
+
                             <div className="selected-count">
 
                                 <strong>
@@ -268,6 +368,8 @@ function Subjects() {
 
                             </div>
 
+
+                            {/* CREDIT HOURS */}
 
                             <div className="selected-count">
 
@@ -285,7 +387,14 @@ function Subjects() {
 
                     </div>
 
+
+
+                    {/* ==================================
+                        MESSAGE
+                    ================================== */}
+
                     {message && (
+
                         <div
                             style={{
                                 padding: "14px 18px",
@@ -296,346 +405,654 @@ function Subjects() {
                                 fontWeight: "600"
                             }}
                         >
+
                             ✓ {message}
+
                         </div>
+
                     )}
+
+
+
+                    {/* ==================================
+                        SUBJECT FORM
+                    ================================== */}
 
                     <div className="subject-form-card">
 
-                        <div style={{ marginBottom: "25px" }}>
 
-                            <span
-                                style={{
-                                    fontSize: "12px",
-                                    fontWeight: "700",
-                                    color: "#f0a500",
-                                    letterSpacing: "1px"
-                                }}
-                            >
+                        {/* FORM HEADER */}
+
+                        <div className="subject-form-header">
+
+                            <div className="form-header-icon">
+
                                 {editingCode
-                                    ? "UPDATE COURSE"
-                                    : "CREATE COURSE"}
-                            </span>
+                                    ? "✏️"
+                                    : "📚"
+                                }
+
+                            </div>
 
 
-                            <h2
-                                style={{
-                                    marginTop: "5px",
-                                    color: "#1e3a5f"
-                                }}
-                            >
-                                {editingCode
-                                    ? "Edit Subject"
-                                    : "Add New Subject"}
-                            </h2>
+                            <div className="form-header-content">
+
+                                <span>
+
+                                    {editingCode
+                                        ? "COURSE MANAGEMENT"
+                                        : "ACADEMIC MANAGEMENT"
+                                    }
+
+                                </span>
+
+
+                                <h2>
+
+                                    {editingCode
+                                        ? "Update Subject"
+                                        : "Add New Subject"
+                                    }
+
+                                </h2>
+
+
+                                <p>
+
+                                    {editingCode
+                                        ? "Update the information of your selected course."
+                                        : "Enter the details below to add a new course to your subjects."
+                                    }
+
+                                </p>
+
+                            </div>
 
                         </div>
 
 
+
+                        {/* FORM */}
+
                         <form onSubmit={handleSubmit}>
 
-                            <div className="subject-form-grid">
 
-                                <div className="form-group">
+                            {/* ==================================
+                                SECTION 01 - BASIC INFORMATION
+                            ================================== */}
 
-                                    <label>
-                                        Course Code *
-                                    </label>
+                            <div className="form-section">
 
-                                    <input
-                                        type="text"
-                                        name="courseCode"
-                                        placeholder="e.g. IT-301"
-                                        value={formData.courseCode}
-                                        onChange={handleChange}
-                                        required
-                                    />
+                                <div className="form-section-title">
 
-                                </div>
+                                    <div className="section-number">
+                                        01
+                                    </div>
 
-                                <div className="form-group">
+                                    <div>
 
-                                    <label>
-                                        Subject Name *
-                                    </label>
+                                        <h3>
+                                            Basic Information
+                                        </h3>
 
-                                    <input
-                                        type="text"
-                                        name="subjectName"
-                                        placeholder="e.g. Web Engineering"
-                                        value={formData.subjectName}
-                                        onChange={handleChange}
-                                        required
-                                    />
+                                        <p>
+                                            Enter the main details of the subject
+                                        </p>
+
+                                    </div>
 
                                 </div>
 
-                                <div className="form-group">
 
-                                    <label>
-                                        Subject Instructor *
-                                    </label>
+                                <div className="beautiful-form-grid">
 
-                                    <input
-                                        type="text"
-                                        name="instructor"
-                                        placeholder="e.g. Dr. Sarah Ahmed"
-                                        value={formData.instructor}
-                                        onChange={handleChange}
-                                        required
-                                    />
 
-                                </div>
+                                    {/* COURSE CODE */}
 
-                                <div className="form-group">
+                                    <div className="beautiful-input-group">
 
-                                    <label>
-                                        Credit Hours *
-                                    </label>
+                                        <label>
+                                            Course Code
+                                            <span>*</span>
+                                        </label>
 
-                                    <select
-                                        name="creditHours"
-                                        value={formData.creditHours}
-                                        onChange={handleChange}
-                                    >
+                                        <div className="input-wrapper">
 
-                                        <option value="1">
-                                            1 Credit Hour
-                                        </option>
+                                            <span className="input-icon">
+                                                #
+                                            </span>
 
-                                        <option value="2">
-                                            2 Credit Hours
-                                        </option>
+                                            <input
+                                                type="text"
+                                                name="courseCode"
+                                                placeholder="e.g. IT-301"
+                                                value={formData.courseCode}
+                                                onChange={handleChange}
+                                                required
+                                                disabled={Boolean(editingCode)}
+                                            />
 
-                                        <option value="3">
-                                            3 Credit Hours
-                                        </option>
+                                        </div>
 
-                                        <option value="4">
-                                            4 Credit Hours
-                                        </option>
+                                        <small>
+                                            Unique code for this course
+                                        </small>
 
-                                        <option value="5">
-                                            5 Credit Hours
-                                        </option>
+                                    </div>
 
-                                    </select>
 
-                                </div>
 
-                                <div className="form-group">
+                                    {/* SUBJECT NAME */}
 
-                                    <label>
-                                        Semester *
-                                    </label>
+                                    <div className="beautiful-input-group">
 
-                                    <select
-                                        name="semester"
-                                        value={formData.semester}
-                                        onChange={handleChange}
-                                        required
-                                    >
+                                        <label>
+                                            Subject Name
+                                            <span>*</span>
+                                        </label>
 
-                                        <option value="">
-                                            Select Semester
-                                        </option>
+                                        <div className="input-wrapper">
 
-                                        <option value="1st">
-                                            1st Semester
-                                        </option>
+                                            <span className="input-icon">
+                                                📖
+                                            </span>
 
-                                        <option value="2nd">
-                                            2nd Semester
-                                        </option>
+                                            <input
+                                                type="text"
+                                                name="subjectName"
+                                                placeholder="e.g. Web Engineering"
+                                                value={formData.subjectName}
+                                                onChange={handleChange}
+                                                required
+                                            />
 
-                                        <option value="3rd">
-                                            3rd Semester
-                                        </option>
+                                        </div>
 
-                                        <option value="4th">
-                                            4th Semester
-                                        </option>
+                                        <small>
+                                            Full name of the subject
+                                        </small>
 
-                                        <option value="5th">
-                                            5th Semester
-                                        </option>
+                                    </div>
 
-                                        <option value="6th">
-                                            6th Semester
-                                        </option>
 
-                                        <option value="7th">
-                                            7th Semester
-                                        </option>
 
-                                        <option value="8th">
-                                            8th Semester
-                                        </option>
+                                    {/* INSTRUCTOR */}
 
-                                    </select>
+                                    <div className="beautiful-input-group">
 
-                                </div>
+                                        <label>
+                                            Subject Instructor
+                                            <span>*</span>
+                                        </label>
 
-                                <div className="form-group">
+                                        <div className="input-wrapper">
 
-                                    <label>
-                                        Department *
-                                    </label>
+                                            <span className="input-icon">
+                                                👨‍🏫
+                                            </span>
 
-                                    <select
-                                        name="department"
-                                        value={formData.department}
-                                        onChange={handleChange}
-                                        required
-                                    >
+                                            <input
+                                                type="text"
+                                                name="instructor"
+                                                placeholder="e.g. Dr. Sarah Ahmed"
+                                                value={formData.instructor}
+                                                onChange={handleChange}
+                                                required
+                                            />
 
-                                        <option value="">
-                                            Select Department
-                                        </option>
+                                        </div>
 
-                                        <option value="Information Technology">
-                                            Information Technology
-                                        </option>
+                                        <small>
+                                            Name of the course instructor
+                                        </small>
 
-                                        <option value="Computer Science">
-                                            Computer Science
-                                        </option>
+                                    </div>
 
-                                        <option value="Software Engineering">
-                                            Software Engineering
-                                        </option>
 
-                                        <option value="Artificial Intelligence">
-                                            Artificial Intelligence
-                                        </option>
 
-                                        <option value="Data Science">
-                                            Data Science
-                                        </option>
+                                    {/* CREDIT HOURS */}
 
-                                    </select>
+                                    <div className="beautiful-input-group">
 
-                                </div>
+                                        <label>
+                                            Credit Hours
+                                            <span>*</span>
+                                        </label>
 
-                                <div className="form-group">
+                                        <div className="input-wrapper">
 
-                                    <label>
-                                        Section
-                                    </label>
+                                            <span className="input-icon">
+                                                🎓
+                                            </span>
 
-                                    <input
-                                        type="text"
-                                        name="section"
-                                        placeholder="e.g. A"
-                                        value={formData.section}
-                                        onChange={handleChange}
-                                    />
+                                            <select
+                                                name="creditHours"
+                                                value={formData.creditHours}
+                                                onChange={handleChange}
+                                                required
+                                            >
 
-                                </div>
+                                                <option value="1">
+                                                    1 Credit Hour
+                                                </option>
 
-                                <div className="form-group">
+                                                <option value="2">
+                                                    2 Credit Hours
+                                                </option>
 
-                                    <label>
-                                        Classroom / Lab
-                                    </label>
+                                                <option value="3">
+                                                    3 Credit Hours
+                                                </option>
 
-                                    <input
-                                        type="text"
-                                        name="room"
-                                        placeholder="e.g. Lab 2"
-                                        value={formData.room}
-                                        onChange={handleChange}
-                                    />
+                                                <option value="4">
+                                                    4 Credit Hours
+                                                </option>
 
-                                </div>
+                                                <option value="5">
+                                                    5 Credit Hours
+                                                </option>
 
-                                <div className="form-group">
+                                            </select>
 
-                                    <label>
-                                        Class Days
-                                    </label>
+                                        </div>
 
-                                    <input
-                                        type="text"
-                                        name="schedule"
-                                        placeholder="e.g. Monday & Wednesday"
-                                        value={formData.schedule}
-                                        onChange={handleChange}
-                                    />
+                                        <small>
+                                            Number of credit hours
+                                        </small>
 
-                                </div>
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Class Time
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="time"
-                                        placeholder="e.g. 10:00 AM - 11:30 AM"
-                                        value={formData.time}
-                                        onChange={handleChange}
-                                    />
-
-                                </div>
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Class Capacity
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        name="capacity"
-                                        min="1"
-                                        value={formData.capacity}
-                                        onChange={handleChange}
-                                    />
+                                    </div>
 
                                 </div>
 
                             </div>
 
-                            <div
-                                style={{
-                                    display: "flex",
-                                    gap: "12px",
-                                    marginTop: "25px"
-                                }}
-                            >
 
-                                <button
-                                    type="submit"
-                                    className="primary-btn"
-                                >
 
-                                    {editingCode
-                                        ? "Update Subject"
-                                        : "Add Subject"}
+                            {/* ==================================
+                                SECTION 02 - ACADEMIC INFORMATION
+                            ================================== */}
 
-                                </button>
+                            <div className="form-section">
+
+                                <div className="form-section-title">
+
+                                    <div className="section-number">
+                                        02
+                                    </div>
+
+                                    <div>
+
+                                        <h3>
+                                            Academic Information
+                                        </h3>
+
+                                        <p>
+                                            Specify the academic placement of the course
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div className="beautiful-form-grid">
+
+
+                                    {/* SEMESTER */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Semester
+                                            <span>*</span>
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                📚
+                                            </span>
+
+                                            <select
+                                                name="semester"
+                                                value={formData.semester}
+                                                onChange={handleChange}
+                                                required
+                                            >
+
+                                                <option value="">
+                                                    Select Semester
+                                                </option>
+
+                                                <option value="1st">
+                                                    1st Semester
+                                                </option>
+
+                                                <option value="2nd">
+                                                    2nd Semester
+                                                </option>
+
+                                                <option value="3rd">
+                                                    3rd Semester
+                                                </option>
+
+                                                <option value="4th">
+                                                    4th Semester
+                                                </option>
+
+                                                <option value="5th">
+                                                    5th Semester
+                                                </option>
+
+                                                <option value="6th">
+                                                    6th Semester
+                                                </option>
+
+                                                <option value="7th">
+                                                    7th Semester
+                                                </option>
+
+                                                <option value="8th">
+                                                    8th Semester
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    {/* DEPARTMENT */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Department
+                                            <span>*</span>
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                🏛️
+                                            </span>
+
+                                            <select
+                                                name="department"
+                                                value={formData.department}
+                                                onChange={handleChange}
+                                                required
+                                            >
+
+                                                <option value="">
+                                                    Select Department
+                                                </option>
+
+                                                <option value="Information Technology">
+                                                    Information Technology
+                                                </option>
+
+                                                <option value="Computer Science">
+                                                    Computer Science
+                                                </option>
+
+                                                <option value="Software Engineering">
+                                                    Software Engineering
+                                                </option>
+
+                                                <option value="Artificial Intelligence">
+                                                    Artificial Intelligence
+                                                </option>
+
+                                                <option value="Data Science">
+                                                    Data Science
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    {/* SECTION */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Section
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                A
+                                            </span>
+
+                                            <input
+                                                type="text"
+                                                name="section"
+                                                placeholder="e.g. A"
+                                                value={formData.section}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    {/* CAPACITY */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Class Capacity
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                👥
+                                            </span>
+
+                                            <input
+                                                type="number"
+                                                name="capacity"
+                                                min="1"
+                                                placeholder="e.g. 40"
+                                                value={formData.capacity}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            {/* ==================================
+                                SECTION 03 - CLASS SCHEDULE
+                            ================================== */}
+
+                            <div className="form-section">
+
+                                <div className="form-section-title">
+
+                                    <div className="section-number">
+                                        03
+                                    </div>
+
+                                    <div>
+
+                                        <h3>
+                                            Class Schedule
+                                        </h3>
+
+                                        <p>
+                                            Add classroom and timetable information
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div className="beautiful-form-grid">
+
+
+                                    {/* CLASSROOM */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Classroom / Lab
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                🏫
+                                            </span>
+
+                                            <input
+                                                type="text"
+                                                name="room"
+                                                placeholder="e.g. Lab 2"
+                                                value={formData.room}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    {/* CLASS DAYS */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Class Days
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                📅
+                                            </span>
+
+                                            <input
+                                                type="text"
+                                                name="schedule"
+                                                placeholder="e.g. Monday & Wednesday"
+                                                value={formData.schedule}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+
+
+                                    {/* CLASS TIME */}
+
+                                    <div className="beautiful-input-group">
+
+                                        <label>
+                                            Class Time
+                                        </label>
+
+                                        <div className="input-wrapper">
+
+                                            <span className="input-icon">
+                                                🕐
+                                            </span>
+
+                                            <input
+                                                type="text"
+                                                name="time"
+                                                placeholder="e.g. 10:00 AM - 11:30 AM"
+                                                value={formData.time}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            {/* ==================================
+                                FORM BUTTONS
+                            ================================== */}
+
+                            <div className="beautiful-form-actions">
 
 
                                 {editingCode && (
 
                                     <button
                                         type="button"
-                                        className="cancel-btn"
+                                        className="form-cancel-btn"
                                         onClick={handleCancel}
                                     >
+
+                                        <span>
+                                            ↩
+                                        </span>
+
                                         Cancel
+
                                     </button>
 
                                 )}
+
+
+                                <button
+                                    type="submit"
+                                    className="form-submit-btn"
+                                >
+
+                                    <span>
+                                        {editingCode
+                                            ? "✓"
+                                            : "+"
+                                        }
+                                    </span>
+
+                                    {editingCode
+                                        ? "Update Subject"
+                                        : "Add Subject"
+                                    }
+
+                                </button>
 
                             </div>
 
                         </form>
 
                     </div>
+
+
+
+                    {/* ==================================
+                        SUBJECT TOOLBAR
+                    ================================== */}
 
                     <div className="subjects-toolbar">
 
@@ -646,8 +1063,7 @@ function Subjects() {
                             </h3>
 
                             <p>
-                                {filteredSubjects.length}
-                                {" "}subject(s) found
+                                {filteredSubjects.length} subject(s) found
                             </p>
 
                         </div>
@@ -656,7 +1072,7 @@ function Subjects() {
                         <input
                             type="search"
                             className="subject-search"
-                            placeholder="Search by course, name or instructor..."
+                            placeholder="Search by course, name, instructor..."
                             value={search}
                             onChange={(e) =>
                                 setSearch(e.target.value)
@@ -665,7 +1081,14 @@ function Subjects() {
 
                     </div>
 
+
+
+                    {/* ==================================
+                        SUBJECT CARDS
+                    ================================== */}
+
                     <div className="subjects-grid">
+
 
                         {filteredSubjects.length === 0 ? (
 
@@ -680,9 +1103,12 @@ function Subjects() {
                                 </h3>
 
                                 <p>
+
                                     {search
                                         ? "No subjects match your search."
-                                        : "Add your first subject using the form above."}
+                                        : "Add your first subject using the form above."
+                                    }
+
                                 </p>
 
                             </div>
@@ -697,6 +1123,9 @@ function Subjects() {
                                         key={subject.courseCode}
                                     >
 
+
+                                        {/* CARD TOP */}
+
                                         <div className="subject-card-top">
 
                                             <span className="course-code">
@@ -705,6 +1134,7 @@ function Subjects() {
 
 
                                             <div className="subject-actions">
+
 
                                                 <button
                                                     type="button"
@@ -733,9 +1163,17 @@ function Subjects() {
 
                                         </div>
 
+
+
+                                        {/* SUBJECT NAME */}
+
                                         <h3>
                                             {subject.subjectName}
                                         </h3>
+
+
+
+                                        {/* INSTRUCTOR */}
 
                                         <div className="subject-instructor">
 
@@ -749,7 +1187,12 @@ function Subjects() {
 
                                         </div>
 
+
+
+                                        {/* DETAILS */}
+
                                         <div className="subject-details">
+
 
                                             <div>
 
@@ -791,55 +1234,90 @@ function Subjects() {
 
                                         </div>
 
+
+
+                                        {/* EXTRA INFORMATION */}
+
                                         <div className="subject-extra">
 
+
                                             <p>
+
                                                 🏢
+
                                                 <strong>
                                                     Department:
                                                 </strong>
+
                                                 {" "}
-                                                {subject.department || "Not assigned"}
+
+                                                {subject.department ||
+                                                    "Not assigned"}
+
                                             </p>
 
 
                                             <p>
+
                                                 🏫
+
                                                 <strong>
                                                     Room:
                                                 </strong>
+
                                                 {" "}
-                                                {subject.room || "Not assigned"}
+
+                                                {subject.room ||
+                                                    "Not assigned"}
+
                                             </p>
 
 
                                             <p>
+
                                                 📅
+
                                                 <strong>
                                                     Days:
                                                 </strong>
+
                                                 {" "}
-                                                {subject.schedule || "Not assigned"}
+
+                                                {subject.schedule ||
+                                                    "Not assigned"}
+
                                             </p>
 
 
                                             <p>
+
                                                 🕐
+
                                                 <strong>
                                                     Time:
                                                 </strong>
+
                                                 {" "}
-                                                {subject.time || "Not assigned"}
+
+                                                {subject.time ||
+                                                    "Not assigned"}
+
                                             </p>
 
 
                                             <p>
+
                                                 👥
+
                                                 <strong>
                                                     Capacity:
                                                 </strong>
+
                                                 {" "}
-                                                {subject.capacity || "N/A"}
+
+                                                {subject.capacity ||
+                                                    "N/A"}
+
                                             </p>
 
                                         </div>
@@ -852,6 +1330,12 @@ function Subjects() {
                         )}
 
                     </div>
+
+
+
+                    {/* ==================================
+                        BACK TO DASHBOARD
+                    ================================== */}
 
                     <Link
                         to="/dashboard"
